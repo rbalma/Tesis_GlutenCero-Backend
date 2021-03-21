@@ -1,8 +1,55 @@
-const fs = require('fs');
 const bcrypt = require("bcrypt-nodejs");
 const jwt = require("../services/jwt"); 
 const User = require("../models/user");
 const path = require("path");
+
+
+const multer = require('multer');
+const shortid = require('shortid');
+const fs = require('fs');
+
+const configuracionMulter = {
+    // 1 Mb
+    limits: { fileSize : 1000000 },
+    storage: fileStorage = multer.diskStorage({
+        destination: (req, file, cb) => {
+            cb(null, __dirname+'../../uploads/avatar');
+        },
+        filename: (req, file, cb) => {
+            const extension = file.mimetype.split('/')[1];
+            cb(null, `${shortid.generate()}.${extension}`);
+        }
+    }),
+    fileFilter(req, file, cb) {
+        if ( file.mimetype === 'image/jpeg' ||  file.mimetype ==='image/png' ) {
+            cb(null, true);
+        } else {
+            cb(new Error('Formato No válido'))
+        }
+    },
+}
+
+// pasar la configuración y el campo
+const upload = multer(configuracionMulter).single('avatar');
+
+// Sube un archivo 
+const subirArchivo = (req, res, next) => {
+  upload(req, res, function(error) {
+      if(error) {
+          if(error instanceof multer.MulterError){
+              if(error.code === 'LIMIT_FILE_SIZE') {
+                  res.json({mensaje: 'El Archivo es muy grande'})
+              } else {
+                  res.json({mensaje: error.message})
+              }
+          } else if(error.hasOwnProperty('message')) {
+              res.json({message: error.message})
+          } 
+      }
+      return next();
+  })
+}
+
 
 function signUp(req, res) {
     
@@ -12,8 +59,8 @@ function signUp(req, res) {
   user.name = name;
   user.lastname = lastname;
   user.email = email.toLowerCase();
-  user.role = "admin";
-  user.active = false;
+  user.role = "user";
+  user.active = true;
 
   if (!password || !repeatPassword) {
     res.status(404).send({ message: "Las contraseñas son obligatorias." });
@@ -72,7 +119,7 @@ function signIn(req, res) {
             if (!userStored.active) {
               res
                 .status(200)
-                .send({ code: 200, message: "El usuario no se ha activado." });
+                .send({ code: 200, message: "El usuario está bloqueado." });
             } else {
               res.status(200).send({
                 accessToken: jwt.createAccessToken(userStored),
@@ -84,6 +131,23 @@ function signIn(req, res) {
       }
     }
   });
+}
+
+
+function getUserById(req, res) {
+  const params = req.params;
+
+  User.findById({_id: params.id}, (err, userData) => {
+    if (err) {
+      res.status(500).send({ message: "Error del servidor." });
+    } else {
+      if (!userData) {
+        res.status(404).send({ message: "Nose ha encontrado ningun usuario." });
+      } else {
+        let user = userData;
+        res.status(200).send({ user });
+    }
+  }});
 }
 
 function getUsers(req, res) {
@@ -100,7 +164,6 @@ function getUsers(req, res) {
 function getUsersActive(req, res) {
 
   const query = req.query;
-
 
   User.find({ active: query.active}).then(users => {
     if(!users){
@@ -121,50 +184,36 @@ function uploadAvatar(req, res) {
       res.status(500).send({ message: "Error del servidor." });
     } else {
       if (!userData) {
-        res.status(404).send({ message: "No se ha encontrado ningun usuario." });
+        res.status(404).send({ message: "Nose ha encontrado ningun usuario." });
       } else {
         let user = userData;
-        console.log(user);
-        console.log(req.files);
-      }}})
-  //       if (req.files) {
-  //         let filePath = req.files.avatar.path;
-  //         let fileSplit = filePath.split("/");
-  //         let fileName = fileSplit[2];
 
-  //         let extSplit = fileName.split(".");
-  //         let fileExt = extSplit[1];
+        if (req.file) {
 
-  //         if (fileExt !== "png" && fileExt !== "jpg") {
-  //           res.status(400).send({
-  //             message:
-  //               "La extension de la imagen no es valida. (Extensiones permitidas: .png y .jpg)"
-  //           });
-  //         } else {
-  //           user.avatar = fileName;
-  //           User.findByIdAndUpdate(
-  //             { _id: params.id },
-  //             user,
-  //             (err, userResult) => {
-  //               if (err) {
-  //                 res.status(500).send({ message: "Error del servidor." });
-  //               } else {
-  //                 if (!userResult) {
-  //                   res
-  //                     .status(404)
-  //                     .send({ message: "No se ha encontrado ningun usuario." });
-  //                 } else {
-  //                   res.status(200).send({ avatarName: fileName });
-  //                 }
-  //               }
-  //             }
-  //           );
-  //         }
-  //       }
-  //     }
-  //   }
-  // });
+          let fileName = req.file.filename;
+            user.avatar = fileName;
+            User.findByIdAndUpdate(
+              { _id: params.id },
+              user,
+              (err, userResult) => {
+                if (err) {
+                  res.status(500).send({ message: "Error del servidor." });
+                } else {
+                  if (!userResult) {
+                    res
+                      .status(404)
+                      .send({ message: "No se ha encontrado ningun usuario." });
+                  } else {
+                    res.status(200).send({ avatarName: fileName });
+                  }
+                }
+              }
+        );
+      }
+    }}
+  });
 }
+
 
 function getAvatar(req, res) {
   const avatarName = req.params.avatarName;
@@ -234,6 +283,7 @@ function activateUser(req, res) {
   });
 }
 
+// Borrar un usuario
 function deleteUser(req, res) {
   const { id } = req.params;
 
@@ -252,7 +302,7 @@ function deleteUser(req, res) {
   });
 }
 
-
+// Registrar un usuario en el panel Admin
 function signUpAdmin(req, res) {
   const user = new User();
 
@@ -297,8 +347,10 @@ function signUpAdmin(req, res) {
 module.exports = {
     signUp,
     signIn,
+    getUserById,
     getUsers,
     getUsersActive,
+    subirArchivo,
     uploadAvatar,
     getAvatar,
     updateUser,

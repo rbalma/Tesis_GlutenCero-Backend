@@ -30,4 +30,7 @@ app.use((req, res, next) => {
 app.use(`/api/${API_VERSION}`, authRoutes);
 app.use(`/api/${API_VERSION}`, userRoutes);
 
+// carpeta publica
+app.use(express.static('uploads'));
+
 module.exports = app;
