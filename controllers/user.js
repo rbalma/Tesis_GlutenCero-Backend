@@ -142,7 +142,7 @@ function getUserById(req, res) {
       res.status(500).send({ message: "Error del servidor." });
     } else {
       if (!userData) {
-        res.status(404).send({ message: "Nose ha encontrado ningun usuario." });
+        res.status(404).send({ message: "No se ha encontrado ningun usuario." });
       } else {
         let user = userData;
         res.status(200).send({ user });

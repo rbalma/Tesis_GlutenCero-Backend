@@ -9,7 +9,7 @@ const { API_VERSION } = require("./config");
 // Load routing
 const authRoutes = require('./routers/auth');
 const userRoutes = require("./routers/user");
-const noticesRoutes = require("./routers/notices");
+const noticeRoutes = require("./routers/notice");
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
@@ -30,7 +30,7 @@ app.use((req, res, next) => {
 // Router Basic
 app.use(`/api/${API_VERSION}`, authRoutes);
 app.use(`/api/${API_VERSION}`, userRoutes);
-app.use(`/api/${API_VERSION}`, noticesRoutes);
+app.use(`/api/${API_VERSION}`, noticeRoutes);
 
 
 // carpeta publica
