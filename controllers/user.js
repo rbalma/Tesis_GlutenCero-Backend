@@ -10,7 +10,7 @@ const fs = require('fs');
 
 const configuracionMulter = {
     // 1 Mb
-    limits: { fileSize : 1000000 },
+    limits: { fileSize : 1000001 },
     storage: fileStorage = multer.diskStorage({
         destination: (req, file, cb) => {
             cb(null, __dirname+'../../uploads/avatar');
@@ -24,7 +24,7 @@ const configuracionMulter = {
         if ( file.mimetype === 'image/jpeg' ||  file.mimetype ==='image/png' ) {
             cb(null, true);
         } else {
-            cb(new Error('Formato No válido'))
+            cb(new Error('La extension de la imagen no es válida. (Extensiones permitidas: .png y .jpg'))
         }
     },
 }
@@ -38,12 +38,12 @@ const subirArchivo = (req, res, next) => {
       if(error) {
           if(error instanceof multer.MulterError){
               if(error.code === 'LIMIT_FILE_SIZE') {
-                  res.json({mensaje: 'El Archivo es muy grande'})
+                  res.status(404).send({mensaje: 'El Archivo es muy grande'});
               } else {
-                  res.json({mensaje: error.message})
+                res.status(404).send({mensaje: error.message})
               }
           } else if(error.hasOwnProperty('message')) {
-              res.json({message: error.message})
+            res.status(404).send({message: error.message})
           } 
       }
       return next();
@@ -184,9 +184,10 @@ function uploadAvatar(req, res) {
       res.status(500).send({ message: "Error del servidor." });
     } else {
       if (!userData) {
-        res.status(404).send({ message: "Nose ha encontrado ningun usuario." });
+        res.status(404).send({ message: "No se ha encontrado ningun usuario." });
       } else {
         let user = userData;
+        const imagenAnteriorPath = __dirname + `/../uploads/avatar/${userData.avatar}`;
 
         if (req.file) {
 
@@ -204,7 +205,16 @@ function uploadAvatar(req, res) {
                       .status(404)
                       .send({ message: "No se ha encontrado ningun usuario." });
                   } else {
-                    res.status(200).send({ avatarName: fileName });
+                        res.status(200).send({ avatarName: fileName });
+                    
+                    //Eliminar archivo con filesystem
+                    fs.unlink(imagenAnteriorPath, (err) => {
+                       if (err) {
+                         res.status(404).send({
+                          message: "El avatar no se pudo eliminar del File System."
+                         });
+                       } 
+                    })
                   }
                 }
               }
@@ -294,9 +304,19 @@ function deleteUser(req, res) {
       if (!userDeleted) {
         res.status(404).send({ message: "Usuario no encontrado." });
       } else {
-        res
-          .status(200)
-          .send({ message: "El usuario ha sido eliminado correctamente." });
+        const imagenAnteriorPath = __dirname + `/../uploads/avatar/${userDeleted.avatar}`;
+        //Eliminar archivo con filesystem
+        fs.unlink(imagenAnteriorPath, (err) => {
+          if (err) {
+            res.status(404).send({
+              message: "El avatar no se pudo eliminar del File System."
+            });
+          } else {
+            res.status(200).send({
+              message: "El usuario ha sido eliminado correctamente."
+            });
+          }
+        })
       }
     }
   });
