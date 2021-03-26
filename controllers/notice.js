@@ -2,6 +2,7 @@ const Notice = require('../models/notices');
 
 const multer = require('multer');
 const shortid = require('shortid');
+const path = require("path");
 const fs = require('fs');
 
 const configuracionMulter = {
@@ -69,7 +70,7 @@ function newNotice (req, res) {
                 if(!noticeStored){
                     res.status(404).send({message: "Error al crear la noticia"});
                 }else{
-                    res.status(200).send({ notice:noticeStored });
+                    res.status(200).send({message: "La noticia se creó con éxito"});
                 }
             }
         });
@@ -95,14 +96,7 @@ function updateNotice(req, res) {
 
         if (req.file) {
           newNotice.image = req.file.filename;
-          //Eliminar archivo con filesystem
-          fs.unlink(imagenAnteriorPath, (err) => {
-            if (err) {
-              res.status(404).send({
-                message: "La imagen no se pudo eliminar del File System.",
-              });
-            }
-          });
+        
         }
 
   Notice.findByIdAndUpdate({ _id: params.id }, newNotice, (err, noticeResult) => {
@@ -115,6 +109,17 @@ function updateNotice(req, res) {
                   .send({ message: "No se ha encontrado ningun usuario." });
               } else {
                 res.status(200).send({ message: "Noticia actualizada" });
+                 
+                //Eliminar archivo con filesystem
+                if (req.file) {
+                  fs.unlink(imagenAnteriorPath, (err) => {
+                    if (err) {
+                      res.status(404).send({
+                        message: "La imagen no se pudo eliminar del File System.",
+                      });
+                    }
+                  });
+                }
               }
             }
           }
@@ -136,22 +141,22 @@ function deleteNotice(req, res) {
         res.status(404).send({ message: "Noticia no encontrada." });
       } else {
         const imagenAnteriorPath = __dirname + `/../uploads/notices/${noticeDeleted.image}`;
-        //Eliminar archivo con filesystem
-        fs.unlink(imagenAnteriorPath, (err) => {
-          if (err) {
-            res.status(404).send({
-              message: "La imagen no se pudo eliminar del File System."
-            });
-          } else {
             res.status(200).send({
               message: "La noticia ha sido eliminado correctamente."
             });
-          }
-        })
+
+               //Eliminar archivo con filesystem
+               fs.unlink(imagenAnteriorPath, (err) => {
+                if (err) {
+                  res.status(404).send({
+                    message: "La imagen no se pudo eliminar del File System."
+                  });
+                }})
       }
     }
-  });
+  })
 }
+
 
 // Mostrar todas las noticias
 function getNotices(req, res) {
@@ -183,11 +188,26 @@ function getNoticeById(req, res) {
 }
 
 
+function getImage(req, res) {
+  const imageName = req.params.imageName;
+  const filePath = "./uploads/notices/" + imageName;
+
+  fs.exists(filePath, exists => {
+    if (!exists) {
+      res.status(404).send({ message: "La imagen que buscas no existe." });
+    } else {
+      res.sendFile(path.resolve(filePath));
+    }
+  });
+}
+
+
 module.exports = {
     newNotice,
     subirArchivo,
     updateNotice,
     deleteNotice,
     getNotices,
-    getNoticeById
+    getNoticeById,
+    getImage
 }

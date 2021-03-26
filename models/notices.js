@@ -7,7 +7,7 @@ const noticesSchema = new Schema ({
         trim: true
     },
     date : {
-        type: String
+        type: Date
     },
     description : {
         type: String,
