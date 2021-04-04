@@ -61,6 +61,7 @@ function signUp(req, res) {
   user.email = email.toLowerCase();
   user.role = "user";
   user.active = true;
+  user.avatar = null;
 
   if (!password || !repeatPassword) {
     res.status(404).send({ message: "Las contraseñas son obligatorias." });
@@ -178,7 +179,7 @@ function getUsersActive(req, res) {
 
 function uploadAvatar(req, res) {
   const params = req.params;
-
+  let imagenAnteriorPath = '';
   User.findById({ _id: params.id }, (err, userData) => {
     if (err) {
       res.status(500).send({ message: "Error del servidor." });
@@ -187,7 +188,10 @@ function uploadAvatar(req, res) {
         res.status(404).send({ message: "No se ha encontrado ningun usuario." });
       } else {
         let user = userData;
-        const imagenAnteriorPath = __dirname + `/../uploads/avatar/${userData.avatar}`;
+
+          if(userData.avatar){
+          imagenAnteriorPath = __dirname + `/../uploads/avatar/${userData.avatar}`;
+          }
 
         if (req.file) {
 
@@ -207,7 +211,8 @@ function uploadAvatar(req, res) {
                   } else {
                         res.status(200).send({ avatarName: fileName });
                     
-                    //Eliminar archivo con filesystem
+                if(imagenAnteriorPath){  
+                     //Eliminar archivo con filesystem
                     fs.unlink(imagenAnteriorPath, (err) => {
                        if (err) {
                          res.status(404).send({
@@ -215,6 +220,8 @@ function uploadAvatar(req, res) {
                          });
                        } 
                     })
+                  }
+
                   }
                 }
               }
