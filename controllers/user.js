@@ -38,7 +38,7 @@ const subirArchivo = (req, res, next) => {
       if(error) {
           if(error instanceof multer.MulterError){
               if(error.code === 'LIMIT_FILE_SIZE') {
-                  res.status(404).send({mensaje: 'El Archivo es muy grande'});
+                  res.status(404).send({mensaje: 'La imagen es muy grande. Límite de 1 MB'});
               } else {
                 res.status(404).send({mensaje: error.message})
               }
