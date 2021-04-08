@@ -160,14 +160,26 @@ function deleteNotice(req, res) {
 
 // Mostrar todas las noticias
 function getNotices(req, res) {
-  
-  Notice.find().then(notices => {
-    if(!notices){
-      res.status(404).send({message:"No se ha encontrado ninguna noticia"})
+  const { page = 1, limit = 10} = req.query;
+
+  const options = {
+    page,
+    limit: parseInt(limit),
+    sort: { date: "desc" }
+  }
+
+  Notice.paginate({}, options, (err, noticesStored) => {
+    if(err) {
+      res.status(500).send({ code: 500, message: "Error del servidor"});
     } else {
-      res.status(200).send({ notices });
+      if(!noticesStored){
+        res.status(404).send({ code: 404, message:"No se ha encontrado ninguna noticia"})
+      } else {
+        res.status(200).send({ code: 200, noticesStored });
+      }
     }
   });
+
 }
 
 // Obtener una noticia por ID
