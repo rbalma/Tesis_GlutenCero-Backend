@@ -7,7 +7,7 @@ const md_auth = require("../middleware/authenticated");
 
 api.post("/new-recipe", [md_auth.ensureAuth], recipeController.subirArchivo, recipeController.newRecipe);
 api.get("/recipes", [md_auth.ensureAuth], recipeController.getRecipes);
-api.get("/recipes-active", [md_auth.ensureAuth], recipeController.getRecipesActive);
+api.get("/recipes-active", recipeController.getRecipesActive);
 
 api.put("/upload-image-recipe/:id", recipeController.subirArchivo, recipeController.uploadImage);
 api.get("/get-image-recipe/:imageName", recipeController.getImage);
