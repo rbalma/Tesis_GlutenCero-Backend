@@ -193,7 +193,7 @@ function getRecipeById(req, res) {
 
 // Obtener todas las recetas
 function getRecipes(req, res) {
-    
+
     Recipe.find().then(recipes => {
       if(!recipes){
         res.status(404).send({message:"No se ha encontrado ninguna receta"});
@@ -261,15 +261,25 @@ function activateRecipe(req, res) {
 // Obtener recetas activas
 function getRecipesActive(req, res) {
 
-    const query = req.query;
-  
-    Recipe.find({ active: query.active}).then(recipes => {
-      if(!recipes){
-        res.status(404).send({message:"No se ha encontrado ninguna receta"})
+  const {active, page = 1, limit = 10} = req.query;
+ 
+  const options = {
+    page,
+    limit: parseInt(limit),
+    sort: { date: "desc" }
+  }
+
+  Recipe.paginate({active}, options, (err, recipesStored) => {
+    if(err) {
+      res.status(500).send({ code: 500, message: "Error del servidor"});
+    } else {
+      if(!recipesStored){
+        res.status(404).send({ code: 404, message:"No se ha encontrado ninguna noticia"})
       } else {
-        res.status(200).send({ recipes });
+        res.status(200).send({ code: 200, recipes: recipesStored });
       }
-    });
+    }
+  });
   
   }
 

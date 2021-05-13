@@ -1,7 +1,9 @@
 const mongoose = require('mongoose');
+const mongoosePaginate = require('mongoose-paginate-v2');
+
 const Schema = mongoose.Schema;
 
-const RecipeSchema = new Schema ({
+const recipeSchema = new Schema ({
     title : {
         type: String,
         trim: true
@@ -31,4 +33,6 @@ const RecipeSchema = new Schema ({
     active: Boolean
 });
 
-module.exports = mongoose.model('Recipe', RecipeSchema);
+recipeSchema.plugin(mongoosePaginate);
+
+module.exports = mongoose.model('Recipe', recipeSchema);

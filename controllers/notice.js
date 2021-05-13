@@ -175,7 +175,7 @@ function getNotices(req, res) {
       if(!noticesStored){
         res.status(404).send({ code: 404, message:"No se ha encontrado ninguna noticia"})
       } else {
-        res.status(200).send({ code: 200, noticesStored });
+        res.status(200).send({ code: 200, notice: noticesStored });
       }
     }
   });
@@ -185,7 +185,7 @@ function getNotices(req, res) {
 // Obtener una noticia por ID
 function getNoticeById(req, res) {
   const params = req.params;
-
+  
   Notice.findById({_id: params.id}, (err, noticeData) => {
   if (err) {
       res.status(500).send({ message: "Error del servidor." });
