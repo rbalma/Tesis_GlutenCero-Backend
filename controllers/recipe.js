@@ -258,30 +258,61 @@ function activateRecipe(req, res) {
   }
 
 
-// Obtener recetas activas
+// Obtener recetas activas por filtros, orden y paginación
 function getRecipesActive(req, res) {
 
-  const {active, page = 1, limit = 10} = req.query;
+  const {active, type, sort, search, page = 1, limit = 10} = req.query;
  
   const options = {
     page,
     limit: parseInt(limit),
-    sort: { date: "desc" }
+    sort: { date: sort }
   }
+  //title: new RegExp('^'+ search +'$', "i")
 
-  Recipe.paginate({active}, options, (err, recipesStored) => {
-    if(err) {
-      res.status(500).send({ code: 500, message: "Error del servidor"});
-    } else {
-      if(!recipesStored){
-        res.status(404).send({ code: 404, message:"No se ha encontrado ninguna noticia"})
+  if(type === 'all'){
+
+        if(search !== ''){
+          Recipe.paginate({active, title: { $regex: new RegExp('.*' + search.toLowerCase() + '.*')  } }, options, (err, recipesStored) => {
+            if(err) {
+              res.status(500).send({ code: 500, message: "Error del servidor"});
+            } else {
+              if(!recipesStored){
+                res.status(404).send({ code: 404, message:"No se ha encontrado ninguna noticia"})
+              } else {
+                res.status(200).send({ code: 200, recipes: recipesStored });
+              }
+            }
+          });
+
+        } else {
+          Recipe.paginate({active}, options, (err, recipesStored) => {
+            if(err) {
+              res.status(500).send({ code: 500, message: "Error del servidor"});
+            } else {
+              if(!recipesStored){
+                res.status(404).send({ code: 404, message:"No se ha encontrado ninguna noticia"})
+              } else {
+                res.status(200).send({ code: 200, recipes: recipesStored });
+              }
+            }
+          });
+        }
+    
+  } else {
+    Recipe.paginate({active, category: type}, options, (err, recipesStored) => {
+      if(err) {
+        res.status(500).send({ code: 500, message: "Error del servidor"});
       } else {
-        res.status(200).send({ code: 200, recipes: recipesStored });
+        if(!recipesStored){
+          res.status(404).send({ code: 404, message:"No se ha encontrado ninguna noticia"})
+        } else {
+          res.status(200).send({ code: 200, recipes: recipesStored });
+        }
       }
-    }
-  });
-  
+    });
   }
+}
 
 
 module.exports = {
