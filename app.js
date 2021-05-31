@@ -1,5 +1,4 @@
 const express = require("express");
-const bodyParser = require("body-parser");
 
 
 const app = express();
@@ -11,9 +10,10 @@ const authRoutes = require('./routers/auth');
 const userRoutes = require("./routers/user");
 const noticeRoutes = require("./routers/notice");
 const recipeRoutes = require("./routers/recipe");
+const forumRoutes = require("./routers/forum");
 
-app.use(bodyParser.urlencoded({ extended: false }));
-app.use(bodyParser.json());
+app.use(express.urlencoded({ extended: false }));
+app.use(express.json());
 
 
 // Configure Header HTTP
@@ -33,6 +33,7 @@ app.use(`/api/${API_VERSION}`, authRoutes);
 app.use(`/api/${API_VERSION}`, userRoutes);
 app.use(`/api/${API_VERSION}`, noticeRoutes);
 app.use(`/api/${API_VERSION}`, recipeRoutes);
+app.use(`/api/${API_VERSION}`, forumRoutes);
 
 
 // carpeta publica
