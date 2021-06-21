@@ -39,7 +39,7 @@ const getPosts = async(req, res) => {
 
 const getLastPost = async(req, res) => {
     const idThread = req.params.id;
-    const posts = await Post.findOne({thread: idThread, sort: created}).populate('user', 'name lastname avatar');
+    const posts = await Post.findOne({thread: idThread}).sort({ created: -1 }).populate('user', 'name lastname avatar');
     res.json({
         ok: true,
         posts
@@ -98,7 +98,7 @@ const updatePost = async(req, res) => {
         }
 
         // new : true es para que me devuelve el post con los datos actualizados
-        const updatePost = await Thread.findByIdAndUpdate( postId, newPost, { new: true });
+        const updatePost = await Post.findByIdAndUpdate( postId, newPost, { new: true });
 
         res.json({
             ok: true,
