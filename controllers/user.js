@@ -61,7 +61,7 @@ function signUp(req, res) {
   user.email = email.toLowerCase();
   user.role = "user";
   user.active = true;
-  user.avatar = null;
+  user.avatar = 'no-avatar.png';
 
   if (!password || !repeatPassword) {
     res.status(404).send({ message: "Las contraseñas son obligatorias." });

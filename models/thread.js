@@ -8,6 +8,10 @@ const threadSchema = new Schema({
         required: true,
         trim: true
     },
+    content: {
+        type: String,
+        required: true
+    },
     status: {
         type: Boolean,
         default: false
@@ -17,12 +21,8 @@ const threadSchema = new Schema({
         default: Date.now()
     },
     user:{
-        id: {
-            type: mongoose.Schema.Types.ObjectId,
+            type: Schema.Types.ObjectId,
             ref: 'User'
-        },
-        name: String,
-        lastname: String
     }
 });
 
