@@ -1,9 +1,9 @@
 const express = require('express');
 const noticeController = require('../controllers/notice');
+const md_auth = require("../middleware/authenticated");
 
 const api = express.Router();
 
-const md_auth = require("../middleware/authenticated");
 
 api.post("/new-notice", [md_auth.ensureAuth], noticeController.subirArchivo, noticeController.newNotice);
 api.get("/get-image/:imageName", noticeController.getImage);

@@ -16,7 +16,7 @@ app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 
 
-// Configure Header HTTP
+//Configure Header HTTP
 app.use((req, res, next) => {
     res.header("Access-Control-Allow-Origin", "*");
     res.header(
@@ -34,6 +34,7 @@ app.use(`/api/${API_VERSION}`, userRoutes);
 app.use(`/api/${API_VERSION}`, noticeRoutes);
 app.use(`/api/${API_VERSION}`, recipeRoutes);
 app.use(`/api/${API_VERSION}`, forumRoutes);
+app.use(`/api/${API_VERSION}`, require('./routers/products'));
 
 
 // carpeta publica
